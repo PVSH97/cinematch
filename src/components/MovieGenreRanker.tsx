@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Film, Heart, Star, Trophy, Users, Info, Check, Save, ChevronRight, Award, Loader2, AlertCircle } from 'lucide-react';
 import { initializeMovieApi, getMovieApi } from '../services/movieApi';
 import { movieCache } from '../services/movieCache';
 import { getGenreIds } from '../constants/genreMapping';
 import type { Movie } from '../types/movie';
+import type { GenreRatings, GenreScores, MovieWatchStatus, SavedMovie, GenreDescriptions } from '../types/MovieGenreRanker';
 
 const MovieGenreRanker = () => {
   // Debug: Add console log to confirm component is mounting
   console.log('MovieGenreRanker component mounted');
   
-  const genreDescriptions = {
+  const genreDescriptions: GenreDescriptions = {
     'Action': 'High-energy films with fights, chases, explosions, and physical stunts. Think James Bond, Marvel movies, or Mission Impossible.',
     'Adventure': 'Exciting journeys and quests, often in exotic locations. Examples: Indiana Jones, Pirates of the Caribbean, Jumanji.',
     'Animation': 'Animated films using various techniques (2D, 3D, stop-motion). Includes both kids\' movies and adult animation.',
@@ -55,7 +56,7 @@ const MovieGenreRanker = () => {
       
       // Get top genres with high scores
       const topGenres = Object.entries(scores)
-        .filter(([_, score]) => score.average >= 3)
+        .filter(([, score]) => score.average >= 3)
         .sort((a, b) => b[1].average - a[1].average)
         .slice(0, 5)
         .map(([genre]) => genre);
@@ -130,7 +131,7 @@ const MovieGenreRanker = () => {
         }
       });
       
-      setDynamicRecommendations(recommendations);
+      setMovieRecommendations(recommendations);
       return recommendations;
       
     } catch (error) {
@@ -144,7 +145,7 @@ const MovieGenreRanker = () => {
   };
 
   // Keep the original hardcoded recommendations as fallback
-  const generateHardcodedRecommendations = (scores: any) => {
+  const generateHardcodedRecommendations = (scores: GenreScores) => {
     const recommendations: Record<string, Movie[]> = {};
     
     // War/Drama category (for high War + Drama scores)
@@ -195,19 +196,18 @@ const MovieGenreRanker = () => {
 
   const genres = Object.keys(genreDescriptions);
 
-  const [person1Ratings, setPerson1Ratings] = useState({});
-  const [person2Ratings, setPerson2Ratings] = useState({});
+  const [person1Ratings, setPerson1Ratings] = useState<GenreRatings>({});
+  const [person2Ratings, setPerson2Ratings] = useState<GenreRatings>({});
   const [currentPerson, setCurrentPerson] = useState(1);
   const [showResults, setShowResults] = useState(false);
   const [scaleSize, setScaleSize] = useState(5);
-  const [hoveredGenre, setHoveredGenre] = useState(null);
+  const [hoveredGenre, setHoveredGenre] = useState<string | null>(null);
   const [showRecommendations, setShowRecommendations] = useState(false);
-  const [movieWatchStatus, setMovieWatchStatus] = useState({});
-  const [savedMovies, setSavedMovies] = useState([]);
+  const [movieWatchStatus, setMovieWatchStatus] = useState<MovieWatchStatus>({});
+  const [savedMovies, setSavedMovies] = useState<SavedMovie[]>([]);
   const [showFinalSelection, setShowFinalSelection] = useState(false);
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
-  const [dynamicRecommendations, setDynamicRecommendations] = useState<Record<string, Movie[]>>({});
   const [useApiRecommendations, setUseApiRecommendations] = useState(true);
   const [movieRecommendations, setMovieRecommendations] = useState<Record<string, Movie[]>>({});
 
@@ -227,7 +227,7 @@ const MovieGenreRanker = () => {
     }
   }, []);
 
-  const handleRating = (genre, rating) => {
+  const handleRating = (genre: string, rating: number) => {
     if (currentPerson === 1) {
       setPerson1Ratings({ ...person1Ratings, [genre]: rating });
     } else {
@@ -239,8 +239,8 @@ const MovieGenreRanker = () => {
     setCurrentPerson(currentPerson === 1 ? 2 : 1);
   };
 
-  const calculateResults = () => {
-    const combinedScores = {};
+  const calculateResults = (): GenreScores => {
+    const combinedScores: GenreScores = {};
     genres.forEach(genre => {
       const score1 = person1Ratings[genre] || 0;
       const score2 = person2Ratings[genre] || 0;
@@ -260,7 +260,7 @@ const MovieGenreRanker = () => {
     return Object.entries(scores)
       .sort((a, b) => b[1].average - a[1].average)
       .slice(0, 7)
-      .filter(([_, score]) => score.average >= threshold);
+      .filter(([, score]) => score.average >= threshold);
   };
 
   const resetRatings = () => {
@@ -274,13 +274,13 @@ const MovieGenreRanker = () => {
     setShowFinalSelection(false);
   };
 
-  const changeScale = (newScale) => {
+  const changeScale = (newScale: number) => {
     setScaleSize(newScale);
     setPerson1Ratings({});
     setPerson2Ratings({});
   };
 
-  const updateWatchStatus = (movieKey, person, status) => {
+  const updateWatchStatus = (movieKey: string, person: 'person1' | 'person2' | 'both', status: boolean) => {
     const newStatus = { ...movieWatchStatus };
     if (!newStatus[movieKey]) newStatus[movieKey] = {};
     
@@ -294,7 +294,7 @@ const MovieGenreRanker = () => {
     setMovieWatchStatus(newStatus);
   };
 
-  const toggleSaveMovie = (category, movie) => {
+  const toggleSaveMovie = (category: string, movie: Movie) => {
     const movieKey = `${category}-${movie.title}`;
     const existingIndex = savedMovies.findIndex(m => m.key === movieKey);
     
@@ -305,12 +305,12 @@ const MovieGenreRanker = () => {
     }
   };
 
-  const isSaved = (category, movie) => {
+  const isSaved = (category: string, movie: Movie) => {
     const movieKey = `${category}-${movie.title}`;
     return savedMovies.some(m => m.key === movieKey);
   };
 
-  const getGenreScore = (genreName) => {
+  const getGenreScore = (genreName: string) => {
     const scores = calculateResults();
     return scores[genreName] || { average: 0 };
   };
@@ -320,7 +320,7 @@ const MovieGenreRanker = () => {
     ? Object.keys(person2Ratings).length > 0 
     : Object.keys(person1Ratings).length > 0;
 
-  const StarRating = ({ genre, currentRating }) => {
+  const StarRating = ({ genre, currentRating }: { genre: string; currentRating: number }) => {
     return (
       <div className="flex items-center gap-1">
         {[...Array(scaleSize)].map((_, i) => (
@@ -343,7 +343,7 @@ const MovieGenreRanker = () => {
     );
   };
 
-  const MovieCard = ({ movie, category }) => {
+  const MovieCard = ({ movie, category }: { movie: Movie; category: string }) => {
     const movieKey = `${category}-${movie.title}`;
     const watchStatus = movieWatchStatus[movieKey] || {};
     const saved = isSaved(category, movie);

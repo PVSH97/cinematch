@@ -124,7 +124,7 @@ class MovieApiService {
     const categoryName = getCategoryName(genreIds);
     
     // For requireAll, we need to get more results and filter
-    const fetchLimit = requireAll ? limit * 3 : limit;
+    // const fetchLimit = requireAll ? limit * 3 : limit;
     
     const movies = await this.discoverMovies({
       genres: genreIds,
