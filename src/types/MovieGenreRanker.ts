@@ -6,8 +6,7 @@ export interface GenreRatings {
 }
 
 export interface GenreScore {
-  person1: number;
-  person2: number;
+  scores: number[]; // Array of scores from each voter
   average: number;
   total: number;
 }
@@ -18,9 +17,13 @@ export interface GenreScores {
 
 export interface MovieWatchStatus {
   [movieKey: string]: {
-    person1?: boolean;
-    person2?: boolean;
+    [personId: string]: boolean; // Dynamic person IDs like "person1", "person2", etc.
   };
+}
+
+export interface VoterInfo {
+  id: number;
+  name: string;
 }
 
 export interface SavedMovie extends Movie {

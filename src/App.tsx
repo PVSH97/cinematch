@@ -27,9 +27,9 @@ function App() {
             </div>
             <button 
               onClick={() => setShowLanding(true)}
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg backdrop-blur-sm transition-colors"
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg backdrop-blur-sm transition-colors flex items-center gap-2"
             >
-              About
+              <span>←</span> Back to Welcome
             </button>
           </div>
         </header>
