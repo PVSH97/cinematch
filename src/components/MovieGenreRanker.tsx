@@ -282,14 +282,18 @@ const MovieGenreRanker = () => {
       });
       
       setMovieRecommendations(recommendations);
+      setIsLoadingRecommendations(false);
       return recommendations;
       
     } catch (error) {
       console.error('Error fetching recommendations:', error);
-      setApiError('Failed to fetch movie recommendations. Using cached/default recommendations.');
+      setApiError('Failed to fetch movie recommendations. Using fallback recommendations.');
+      setIsLoadingRecommendations(false);
       setUseApiRecommendations(false);
       // Fallback to hardcoded recommendations
       return generateHardcodedRecommendations(scores);
+    } finally {
+      setIsLoadingRecommendations(false);
     }
   };
 
@@ -327,7 +331,7 @@ const MovieGenreRanker = () => {
 
   const allVotersComplete = numberOfVoters > 0 && 
     Object.keys(allRatings).length === numberOfVoters && 
-    Object.values(allRatings).every(ratings => Object.keys(ratings).length >= genres.length * 0.7);
+    Object.values(allRatings).every(ratings => Object.keys(ratings).length >= genres.length);
 
   const StarRating = ({ genre, currentRating }: { genre: string; currentRating: number }) => {
     return (
@@ -518,18 +522,20 @@ const MovieGenreRanker = () => {
           })}
         </div>
 
-        <div className="flex gap-4 justify-center">
+        <div className="flex flex-wrap gap-2 sm:gap-4 justify-center">
           <button
             onClick={() => setShowFinalSelection(false)}
-            className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition text-sm sm:text-base"
           >
-            Back to Recommendations
+            <span className="hidden sm:inline">Back to Recommendations</span>
+            <span className="sm:hidden">Back</span>
           </button>
           <button
             onClick={resetRatings}
-            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm sm:text-base"
           >
-            Start New Session
+            <span className="hidden sm:inline">Start New Session</span>
+            <span className="sm:hidden">New Session</span>
           </button>
         </div>
       </div>
@@ -575,27 +581,30 @@ const MovieGenreRanker = () => {
           </div>
         ))}
 
-        <div className="flex gap-4 justify-center mt-8">
+        <div className="flex flex-wrap gap-2 sm:gap-4 justify-center mt-8">
           <button
             onClick={() => setShowRecommendations(false)}
-            className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition text-sm sm:text-base"
           >
-            Back to Results
+            <span className="hidden sm:inline">Back to Results</span>
+            <span className="sm:hidden">Back</span>
           </button>
           {savedMovies.length > 0 && (
             <button
               onClick={() => setShowFinalSelection(true)}
-              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2"
+              className="px-4 sm:px-6 py-2 sm:py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2 text-sm sm:text-base"
             >
               <Save size={20} />
-              View Saved Movies ({savedMovies.length})
+              <span className="hidden sm:inline">View Saved Movies ({savedMovies.length})</span>
+              <span className="sm:hidden">Saved ({savedMovies.length})</span>
             </button>
           )}
           <button
             onClick={resetRatings}
-            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm sm:text-base"
           >
-            Start Over
+            <span className="hidden sm:inline">Start Over</span>
+            <span className="sm:hidden">Restart</span>
           </button>
         </div>
       </div>
@@ -649,28 +658,31 @@ const MovieGenreRanker = () => {
           ))}
         </div>
 
-        <div className="flex gap-4 justify-center">
+        <div className="flex flex-wrap gap-2 sm:gap-4 justify-center">
           <button
             onClick={() => setShowResults(false)}
-            className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition text-sm sm:text-base"
           >
-            Back to Rating
+            <span className="hidden sm:inline">Back to Rating</span>
+            <span className="sm:hidden">Back</span>
           </button>
           <button
             onClick={async () => {
               setShowRecommendations(true);
               await generateRecommendations();
             }}
-            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition flex items-center gap-2"
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition flex items-center gap-2 text-sm sm:text-base"
           >
-            Get Movie Recommendations
+            <span className="hidden sm:inline">Get Movie Recommendations</span>
+            <span className="sm:hidden">Get Movies</span>
             <ChevronRight size={20} />
           </button>
           <button
             onClick={resetRatings}
-            className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm sm:text-base"
           >
-            Reset All
+            <span className="hidden sm:inline">Reset All</span>
+            <span className="sm:hidden">Reset</span>
           </button>
         </div>
       </div>
@@ -758,42 +770,46 @@ const MovieGenreRanker = () => {
         ))}
       </div>
 
-      <div className="mt-6 flex gap-4 justify-center">
+      <div className="mt-6 flex flex-wrap gap-2 sm:gap-4 justify-center">
         {numberOfVoters > 1 && currentVoterIndex < numberOfVoters - 1 && (
           <button
             onClick={switchToNextVoter}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2 text-sm sm:text-base"
           >
-            Switch to {voters[currentVoterIndex + 1]?.name || `Person ${currentVoterIndex + 2}`}
+            <span className="hidden sm:inline">Switch to {voters[currentVoterIndex + 1]?.name || `Person ${currentVoterIndex + 2}`}</span>
+            <span className="sm:hidden">Next Person</span>
             <ChevronRight size={20} />
           </button>
         )}
         
-        {(numberOfVoters === 1 || (numberOfVoters > 1 && otherVotersComplete)) && (
+        {allVotersComplete ? (
           <button
             onClick={() => setShowResults(true)}
-            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2"
-          >
-            <Trophy size={20} />
-            View Results
-          </button>
-        )}
-
-        {allVotersComplete && (
-          <button
-            onClick={() => setShowResults(true)}
-            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition flex items-center gap-2 animate-pulse"
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition flex items-center gap-2 animate-pulse text-sm sm:text-base"
           >
             <Star size={20} />
-            All Done! See Results
+            <span className="hidden sm:inline">All Done! See Results</span>
+            <span className="sm:hidden">See Results</span>
           </button>
+        ) : (
+          (numberOfVoters === 1 || (numberOfVoters > 1 && otherVotersComplete)) && (
+            <button
+              onClick={() => setShowResults(true)}
+              className="px-4 sm:px-6 py-2 sm:py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2 text-sm sm:text-base"
+            >
+              <Trophy size={20} />
+              <span className="hidden sm:inline">View Results</span>
+              <span className="sm:hidden">Results</span>
+            </button>
+          )
         )}
 
         <button
           onClick={resetRatings}
-          className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+          className="px-4 sm:px-6 py-2 sm:py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm sm:text-base"
         >
-          Reset All
+          <span className="hidden sm:inline">Reset All</span>
+          <span className="sm:hidden">Reset</span>
         </button>
       </div>
     </div>
