@@ -64,9 +64,11 @@ const MovieGenreRanker = () => {
   // Initialize API on component mount
   useEffect(() => {
     const apiKey = import.meta.env.VITE_TMDB_API_KEY;
+    console.log('API Key present:', !!apiKey);
     if (apiKey && apiKey !== 'your_tmdb_api_key_here') {
       try {
         initializeMovieApi(apiKey);
+        console.log('API initialized successfully');
       } catch (error) {
         console.error('Failed to initialize movie API:', error);
         setUseApiRecommendations(false);
@@ -205,8 +207,10 @@ const MovieGenreRanker = () => {
 
   const generateRecommendations = async () => {
     const scores = calculateResults();
+    console.log('Generating recommendations, useAPI:', useApiRecommendations);
     
     if (!useApiRecommendations) {
+      console.log('Using hardcoded recommendations');
       return generateHardcodedRecommendations(scores);
     }
 
@@ -214,6 +218,7 @@ const MovieGenreRanker = () => {
     setApiError(null);
     
     try {
+      console.log('Fetching from TMDB API...');
       const recommendations: Record<string, Movie[]> = {};
       const movieApi = getMovieApi();
       
@@ -273,20 +278,25 @@ const MovieGenreRanker = () => {
         return null;
       });
 
+      console.log('Fetching movies for', genreCombinations.length, 'genre combinations');
       const results = await Promise.all(fetchPromises);
+      console.log('API fetch complete, processing results...');
       
       results.forEach(result => {
         if (result && result.movies.length > 0) {
           recommendations[result.category] = result.movies;
+          console.log(`Added ${result.movies.length} movies for ${result.category}`);
         }
       });
       
+      console.log('Total recommendations:', Object.keys(recommendations).length);
       setMovieRecommendations(recommendations);
       setIsLoadingRecommendations(false);
       return recommendations;
       
     } catch (error) {
       console.error('Error fetching recommendations:', error);
+      console.error('Error details:', error);
       setApiError('Failed to fetch movie recommendations. Using fallback recommendations.');
       setIsLoadingRecommendations(false);
       setUseApiRecommendations(false);
@@ -300,9 +310,7 @@ const MovieGenreRanker = () => {
   const generateHardcodedRecommendations = (scores: GenreScores) => {
     const recommendations: Record<string, Movie[]> = {};
     
-    // Your existing hardcoded recommendations logic here
-    // (keeping it simple for now, you can expand this later)
-    
+    // More comprehensive hardcoded recommendations
     if (scores['Action']?.average >= 3) {
       recommendations['Action'] = [
         {
@@ -312,10 +320,74 @@ const MovieGenreRanker = () => {
           description: 'In a post-apocalyptic wasteland, a woman rebels against a tyrannical ruler in search for her homeland.',
           poster: undefined,
           genres: ['Action', 'Adventure', 'Sci-Fi']
+        },
+        {
+          title: 'The Dark Knight',
+          year: 2008,
+          imdb: 9.0,
+          description: 'Batman faces the Joker, a criminal mastermind who wants to plunge Gotham into anarchy.',
+          poster: undefined,
+          genres: ['Action', 'Crime', 'Drama']
         }
       ];
     }
     
+    if (scores['Drama']?.average >= 3) {
+      recommendations['Drama'] = [
+        {
+          title: 'The Shawshank Redemption',
+          year: 1994,
+          imdb: 9.3,
+          description: 'Two imprisoned men bond over years, finding solace and eventual redemption.',
+          poster: undefined,
+          genres: ['Drama']
+        },
+        {
+          title: 'The Godfather',
+          year: 1972,
+          imdb: 9.2,
+          description: 'The aging patriarch of an organized crime dynasty transfers control to his reluctant son.',
+          poster: undefined,
+          genres: ['Crime', 'Drama']
+        }
+      ];
+    }
+    
+    if (scores['Sci-Fi']?.average >= 3) {
+      recommendations['Sci-Fi'] = [
+        {
+          title: 'Inception',
+          year: 2010,
+          imdb: 8.8,
+          description: 'A thief who steals corporate secrets through dream-sharing technology.',
+          poster: undefined,
+          genres: ['Action', 'Sci-Fi', 'Thriller']
+        },
+        {
+          title: 'Interstellar',
+          year: 2014,
+          imdb: 8.6,
+          description: 'A team of explorers travel through a wormhole in space to ensure humanity\'s survival.',
+          poster: undefined,
+          genres: ['Adventure', 'Drama', 'Sci-Fi']
+        }
+      ];
+    }
+    
+    if (scores['Comedy']?.average >= 3) {
+      recommendations['Comedy'] = [
+        {
+          title: 'The Grand Budapest Hotel',
+          year: 2014,
+          imdb: 8.1,
+          description: 'The adventures of a legendary concierge at a famous hotel.',
+          poster: undefined,
+          genres: ['Adventure', 'Comedy', 'Crime']
+        }
+      ];
+    }
+    
+    console.log('Generated hardcoded recommendations for', Object.keys(recommendations).length, 'categories');
     setMovieRecommendations(recommendations);
     return recommendations;
   };
